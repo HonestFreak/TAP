@@ -2,12 +2,13 @@ import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
 
 const sidebars: SidebarsConfig = {
   mainSidebar: [
-    'intro',
-    'architecture',
+    {type: 'doc', id: 'intro', className: 'sidebar-icon sidebar-icon-intro'},
+    {type: 'doc', id: 'architecture', className: 'sidebar-icon sidebar-icon-architecture'},
     {
       type: 'category',
       label: 'Concepts',
       collapsed: false,
+      className: 'sidebar-icon sidebar-icon-concepts',
       items: [
         'concepts/why-tap',
         'concepts/session-lifecycle',
@@ -20,6 +21,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'Protocol',
+      className: 'sidebar-icon sidebar-icon-protocol',
       items: [
         'protocol/on-chain',
         'protocol/wire-format',
@@ -29,6 +31,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'SDK',
+      className: 'sidebar-icon sidebar-icon-sdk',
       items: [
         'sdk/install',
         'sdk/producer',
@@ -41,6 +44,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'Demo',
+      className: 'sidebar-icon sidebar-icon-demo',
       items: [
         'demo/run',
         'demo/architecture',
@@ -49,6 +53,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'Beyond LLM',
+      className: 'sidebar-icon sidebar-icon-beyond',
       items: [
         'beyond-llm/overview',
         'beyond-llm/video',
@@ -57,7 +62,7 @@ const sidebars: SidebarsConfig = {
         'beyond-llm/apis',
       ],
     },
-    'whitepaper',
+    {type: 'doc', id: 'whitepaper', className: 'sidebar-icon sidebar-icon-whitepaper'},
   ],
 };
 

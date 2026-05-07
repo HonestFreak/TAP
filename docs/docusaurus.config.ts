@@ -92,8 +92,9 @@ const config: Config = {
         },
         {
           href: 'https://github.com/HonestFreak/TAP',
-          label: 'GitHub',
           position: 'right',
+          className: 'navbar-github-link',
+          'aria-label': 'GitHub repository',
         },
       ],
     },
