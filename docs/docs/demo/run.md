@@ -22,7 +22,7 @@ trigger, and an on-chain refund of the unused deposit.
 ## One-time setup
 
 ```bash
-git clone https://github.com/your-org/tap
+git clone https://github.com/HonestFreak/TAP
 cd tap
 
 # Python SDK

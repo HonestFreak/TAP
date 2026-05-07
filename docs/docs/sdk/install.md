@@ -9,7 +9,7 @@ The TAP Python SDK lives at `sdk/python/` in the repo. Install it
 editable:
 
 ```bash
-git clone https://github.com/your-org/tap
+git clone https://github.com/HonestFreak/TAP
 cd sol
 pip install -e sdk/python
 ```

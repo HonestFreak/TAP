@@ -43,7 +43,7 @@ export default function Hero(): JSX.Element {
           </a>
           <a
             className={styles.ghost}
-            href="https://github.com/your-org/tap"
+            href="https://github.com/HonestFreak/TAP"
             target="_blank"
             rel="noreferrer"
           >

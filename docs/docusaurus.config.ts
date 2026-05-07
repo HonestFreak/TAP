@@ -91,7 +91,7 @@ const config: Config = {
           rel: null,
         },
         {
-          href: 'https://github.com/your-org/tap',
+          href: 'https://github.com/HonestFreak/TAP',
           label: 'GitHub',
           position: 'right',
         },
