@@ -1,0 +1,125 @@
+.wrap {
+  padding: 5rem 1.5rem;
+  background: #0b0b14;
+  color: #f4f3ff;
+}
+
+.head {
+  max-width: 720px;
+  margin: 0 auto 2.6rem;
+  text-align: center;
+}
+
+.h2 {
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  margin: 0 0 0.8rem;
+  letter-spacing: -0.02em;
+  background: linear-gradient(90deg, #b387ff, #3fbfd8, #3fe8b5);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.sub {
+  color: #c8c5e2;
+  font-size: 1.02rem;
+  line-height: 1.65;
+  margin: 0;
+}
+
+.tableWrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.tableHead,
+.row {
+  display: grid;
+  grid-template-columns: 1.1fr 1.5fr 1.5fr;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem 1.4rem;
+  font-size: 0.93rem;
+}
+
+.tableHead {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.025);
+  font-weight: 600;
+  color: #f4f3ff;
+  font-size: 0.85rem;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.colTagBad,
+.colTagGood {
+  width: fit-content;
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.colTagBad {
+  background: rgba(255, 138, 77, 0.18);
+  color: #ffb290;
+  border: 1px solid rgba(255, 138, 77, 0.3);
+}
+
+.colTagGood {
+  background: rgba(63, 232, 181, 0.16);
+  color: #6df0c2;
+  border: 1px solid rgba(63, 232, 181, 0.3);
+}
+
+.row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.18s ease;
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.row:hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.label {
+  color: #c8c5e2;
+  font-weight: 500;
+}
+
+.current {
+  color: #ffb290;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+
+.tap {
+  color: #6df0c2;
+  font-weight: 500;
+}
+
+@media (max-width: 720px) {
+  .tableHead,
+  .row {
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+  }
+  .label {
+    color: #f4f3ff;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+  }
+}

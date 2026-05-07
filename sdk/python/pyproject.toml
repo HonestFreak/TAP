@@ -1,0 +1,55 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tap-protocol"
+version = "0.1.0"
+description = "TAP — Token Access Protocol. Token-by-token payments for LLM inference on Solana."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "TAP authors" }]
+keywords = ["solana", "x402", "llm", "payments", "state-channel", "streaming"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "solders>=0.21",
+    "solana>=0.34",
+    "pynacl>=1.5",
+    "httpx>=0.27",
+    "anyio>=4.4",
+    "pydantic>=2.7",
+    "fastapi>=0.111",
+    "sse-starlette>=2.1",
+    "uvicorn>=0.30",
+]
+
+[project.optional-dependencies]
+anthropic = ["anthropic>=0.34"]
+openai = ["openai>=1.40"]
+ollama = ["ollama>=0.3"]
+dev = ["pytest>=8.2", "pytest-asyncio>=0.23", "ruff>=0.5", "mypy>=1.10"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["tap"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "ANN", "RUF"]
+ignore = ["ANN101", "ANN102"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unused_ignores = true

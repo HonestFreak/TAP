@@ -1,0 +1,247 @@
+/**
+ * The hero's signature loop: tokens flow → evaluator pulses → valve closes →
+ * tokens halt → valve reopens. Same vocabulary as MeterDemo, but autoplaying
+ * and stripped of side panels — this is the gesture in its purest form.
+ */
+
+.scene {
+  position: relative;
+  max-width: 880px;
+  margin: 0 auto 2rem;
+  padding: 0 0.5rem;
+}
+
+/* The pipe-shaped rail. */
+.rail {
+  position: relative;
+  height: 92px;
+  border-radius: 999px;
+  background: rgba(7, 18, 27, 0.7);
+  border: 1px solid var(--tap-border-strong);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.5),
+    0 20px 60px rgba(63, 208, 232, 0.10);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Subtle cylindrical shading on the pipe. */
+.railWall {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.35) 0%,
+    transparent 22%,
+    transparent 78%,
+    rgba(0, 0, 0, 0.35) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* The window through which tokens are visible — clipped at the valve so the
+   flow visibly stops there when halted. */
+.streamWindow {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 78%;
+  overflow: hidden;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+}
+
+/* The scrolling token track. Two copies of the token row sit end-to-end and
+   the whole track translates leftward. When halted, the animation pauses. */
+.streamTrack {
+  display: flex;
+  gap: 0;
+  animation: streamScroll 14s linear infinite;
+  will-change: transform;
+}
+
+.streamTrack[data-phase='halted'],
+.streamTrack[data-phase='halting'] {
+  animation-play-state: paused;
+}
+
+@keyframes streamScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.tokenRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.6rem;
+  flex-shrink: 0;
+}
+
+/* Each token is a small monospace pill — reads as "an LLM token unit." */
+.tokenPill {
+  flex-shrink: 0;
+  padding: 0.32rem 0.68rem;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.86rem;
+  line-height: 1;
+  color: var(--tap-text);
+  background: linear-gradient(
+    180deg,
+    rgba(63, 208, 232, 0.18),
+    rgba(63, 232, 181, 0.10)
+  );
+  border: 1px solid rgba(63, 208, 232, 0.35);
+  white-space: pre;
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* When halted, gray out the pills past the valve to reinforce "this stuff
+   never reached the producer." */
+.streamTrack[data-phase='halted'] .tokenPill,
+.streamTrack[data-phase='halting'] .tokenPill {
+  opacity: 0.55;
+  transition: opacity 0.4s ease;
+}
+
+/* Vertical amber line at the valve — fires when evaluator pulses. */
+.haltMark {
+  position: absolute;
+  top: -10px;
+  bottom: -10px;
+  left: 78%;
+  width: 3px;
+  background: var(--tap-halt);
+  transform: translateX(-50%);
+  border-radius: 2px;
+  z-index: 4;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.haltMark[data-phase='halting'],
+.haltMark[data-phase='halted'] {
+  opacity: 1;
+  animation: haltPulse 1.4s ease-out infinite;
+}
+
+@keyframes haltPulse {
+  0%, 100% { box-shadow: 0 0 0 0   rgba(255, 161, 77, 0.55); }
+  50%      { box-shadow: 0 0 22px 8px rgba(255, 161, 77, 0.35); }
+}
+
+/* Valve floats above the rail at the cutoff point. */
+.valveSlot {
+  position: absolute;
+  top: 50%;
+  left: 78%;
+  width: 80px;
+  height: 80px;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+}
+
+.valve {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.valveBody {
+  fill: var(--tap-bg-panel);
+  stroke: var(--tap-border-strong);
+  stroke-width: 1.5;
+}
+
+.valveRing {
+  fill: none;
+  stroke: var(--tap-flow);
+  stroke-width: 2.5;
+  opacity: 0.75;
+  transition: stroke 0.4s ease, opacity 0.4s ease;
+}
+.valve[data-phase='halted']  .valveRing,
+.valve[data-phase='halting'] .valveRing {
+  stroke: var(--tap-halt);
+  opacity: 1;
+}
+
+.valveDisc {
+  stroke: var(--tap-flow-bright);
+  stroke-width: 4;
+  stroke-linecap: round;
+  transform-origin: 32px 32px;
+  transition: transform 0.55s cubic-bezier(0.34, 1.4, 0.6, 1), stroke 0.4s ease;
+}
+.valve[data-phase='halted']  .valveDisc,
+.valve[data-phase='halting'] .valveDisc {
+  stroke: var(--tap-halt);
+}
+
+.valveHub {
+  fill: var(--tap-bg-deep);
+  stroke: var(--tap-flow-bright);
+  stroke-width: 1.5;
+  transition: stroke 0.4s ease;
+}
+.valve[data-phase='halted']  .valveHub,
+.valve[data-phase='halting'] .valveHub {
+  stroke: var(--tap-halt);
+}
+
+/* Caption — small status line beneath the rail explaining the current
+   phase. Reinforces the protocol vocabulary as the animation cycles. */
+.caption {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  color: var(--tap-text-mute);
+  min-height: 18px;
+}
+
+.captionDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tap-flow);
+  box-shadow: 0 0 8px rgba(63, 208, 232, 0.6);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+.captionDot[data-phase='halted'],
+.captionDot[data-phase='halting'] {
+  background: var(--tap-halt);
+  box-shadow: 0 0 8px rgba(255, 161, 77, 0.6);
+}
+.captionDot[data-phase='resuming'] {
+  background: var(--tap-settled);
+  box-shadow: 0 0 8px rgba(63, 232, 181, 0.6);
+}
+
+.captionText {
+  color: var(--tap-text-dim);
+}
+
+/* Reduced motion: freeze the loop in its 'flowing' end state — no scroll,
+   no halt pulse. The valve stays open. Static still that still tells the
+   story (motion isn't load-bearing for understanding the diagram). */
+@media (prefers-reduced-motion: reduce) {
+  .streamTrack { animation: none; }
+  .haltMark    { animation: none; opacity: 0; }
+  .valveDisc   { transition: none; }
+}
+
+@media (max-width: 720px) {
+  .rail { height: 76px; }
+  .valveSlot { width: 64px; height: 64px; }
+  .tokenPill { font-size: 0.78rem; padding: 0.28rem 0.55rem; }
+}

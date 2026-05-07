@@ -1,0 +1,208 @@
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: 6rem 1.5rem 4rem;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(63, 232, 181, 0.15), transparent 60%),
+    radial-gradient(1200px 600px at -10% 110%, rgba(63, 208, 232, 0.18), transparent 60%),
+    linear-gradient(180deg, var(--tap-bg-deep) 0%, var(--tap-bg-panel) 100%);
+  color: var(--tap-text);
+  isolation: isolate;
+}
+
+[data-theme='light'] .hero {
+  color: var(--tap-text);
+}
+
+.gridBg {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(180, 220, 240, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(180, 220, 240, 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(circle at 50% 30%, #000 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(circle at 50% 30%, #000 30%, transparent 75%);
+  z-index: 0;
+}
+
+.glowA,
+.glowB {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.50;
+  z-index: 0;
+  animation: floaty 14s ease-in-out infinite alternate;
+}
+
+.glowA {
+  width: 420px;
+  height: 420px;
+  background: var(--tap-flow);
+  top: -120px;
+  left: -120px;
+}
+
+.glowB {
+  width: 480px;
+  height: 480px;
+  background: var(--tap-settled);
+  bottom: -180px;
+  right: -160px;
+  animation-delay: -7s;
+}
+
+@keyframes floaty {
+  0%   { transform: translate(0, 0)     scale(1);    }
+  50%  { transform: translate(40px, 30px) scale(1.06); }
+  100% { transform: translate(-30px, -20px) scale(0.96); }
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.eyebrow {
+  display: inline-block;
+  font-size: 0.78rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  background: var(--tap-flow-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin-bottom: 1.6rem;
+  font-weight: 600;
+  padding: 0.35rem 0.85rem;
+  border: 1px solid rgba(63, 208, 232, 0.25);
+  border-radius: 999px;
+}
+
+.title {
+  font-size: clamp(2.2rem, 4.4vw, 3.4rem);
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 1.4rem;
+  color: var(--tap-text);
+}
+
+.title em {
+  font-style: normal;
+  background: var(--tap-flow-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.tagline {
+  max-width: 720px;
+  margin: 0 auto 2.4rem;
+  font-size: 1.08rem;
+  line-height: 1.65;
+  color: var(--tap-text-dim);
+}
+
+.tagline a {
+  color: var(--tap-flow-bright);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(63, 208, 232, 0.4);
+}
+
+.ctaRow {
+  display: flex;
+  gap: 0.85rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 3.6rem;
+}
+
+.primary,
+.secondary,
+.ghost {
+  padding: 0.85rem 1.5rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.primary {
+  color: var(--tap-bg-deep);
+  background: var(--tap-flow-gradient);
+  box-shadow: 0 8px 26px rgba(63, 208, 232, 0.30);
+}
+
+.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 30px rgba(63, 232, 181, 0.40);
+  color: var(--tap-bg-deep);
+}
+
+.secondary {
+  color: var(--tap-text);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--tap-border-strong);
+  backdrop-filter: blur(8px);
+}
+
+.secondary:hover {
+  background: rgba(255, 255, 255, 0.10);
+  color: var(--tap-text);
+}
+
+.ghost {
+  color: var(--tap-text-dim);
+  background: transparent;
+}
+
+.ghost:hover {
+  color: var(--tap-text);
+}
+
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 1.2rem;
+  border: 1px solid var(--tap-border);
+  border-radius: 18px;
+  background: rgba(7, 18, 27, 0.5);
+  backdrop-filter: blur(8px);
+}
+
+.stat {
+  text-align: center;
+}
+
+.statValue {
+  font-size: 1.6rem;
+  font-weight: 700;
+  background: var(--tap-flow-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.statLabel {
+  font-size: 0.78rem;
+  color: var(--tap-text-mute);
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 720px) {
+  .statsRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

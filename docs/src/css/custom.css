@@ -1,0 +1,75 @@
+/**
+ * Theme tuned to the TAP logo gradient (violet → cyan → mint).
+ *
+ * Two layers:
+ *   1. Docusaurus theme tokens (--ifm-*) — purple-led brand for nav, links,
+ *      doc headings.
+ *   2. --tap-* tokens — used by the landing-page hero/flow visual which has
+ *      its own deep-water identity (cyan/mint flow, amber halt). These live
+ *      here so the hero can pull from a single source.
+ */
+
+:root {
+  /* Docusaurus brand */
+  --ifm-color-primary: #6c5ce7;
+  --ifm-color-primary-dark: #5b4ddb;
+  --ifm-color-primary-darker: #4f42c9;
+  --ifm-color-primary-darkest: #3f35a7;
+  --ifm-color-primary-light: #8478ec;
+  --ifm-color-primary-lighter: #9d92f0;
+  --ifm-color-primary-lightest: #bcb4f5;
+  --ifm-code-font-size: 92%;
+  --docusaurus-highlighted-code-line-bg: rgba(108, 92, 231, 0.10);
+
+  --tap-gradient: linear-gradient(
+    90deg,
+    #9b5cf6 0%,
+    #5e8df3 35%,
+    #3fbfd8 70%,
+    #3fe8b5 100%
+  );
+
+  /* ─── Hero / FlowHeroVisual tokens ─────────────────────────────────────
+     The landing hero is the only place that uses these; the rest of the
+     site uses the --ifm-* brand. */
+  --tap-bg-deep: #060f18;
+  --tap-bg-panel: #0c1a26;
+  --tap-bg-sunken: #07121b;
+  --tap-border: rgba(180, 220, 240, 0.10);
+  --tap-border-strong: rgba(180, 220, 240, 0.18);
+
+  --tap-flow: #3fd0e8;
+  --tap-flow-bright: #5fe3f5;
+  --tap-settled: #3fe8b5;
+  --tap-halt: #ffa14d;
+  --tap-halt-soft: #ffd2b8;
+
+  --tap-text: #e6f2f7;
+  --tap-text-dim: #a9bccb;
+  --tap-text-mute: #6f8294;
+
+  --tap-flow-gradient: linear-gradient(90deg, var(--tap-flow), var(--tap-settled));
+}
+
+[data-theme='dark'] {
+  --ifm-color-primary: #8478ec;
+  --ifm-color-primary-dark: #6c5ce7;
+  --ifm-color-primary-darker: #5e4fdc;
+  --ifm-color-primary-darkest: #4a3fc4;
+  --ifm-color-primary-light: #9d92f0;
+  --ifm-color-primary-lighter: #bcb4f5;
+  --ifm-color-primary-lightest: #d8d3fa;
+  --docusaurus-highlighted-code-line-bg: rgba(132, 120, 236, 0.18);
+}
+
+.navbar__logo img {
+  filter: drop-shadow(0 0 6px rgba(108, 92, 231, 0.25));
+}
+
+article header h1,
+.markdown > h1:first-child {
+  background: var(--tap-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}

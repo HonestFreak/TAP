@@ -1,0 +1,35 @@
+# Anchor / Solana
+target/
+.anchor/
+test-ledger/
+**/*.so
+**/*.rs.bk
+
+# Node
+node_modules/
+yarn.lock
+package-lock.json
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.json.key
