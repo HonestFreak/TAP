@@ -91,6 +91,13 @@ const config: Config = {
           rel: null,
         },
         {
+          href: 'https://demo.tapprotocol.space',
+          label: 'Demo',
+          position: 'left',
+          target: '_blank',
+          rel: null,
+        },
+        {
           href: 'https://github.com/HonestFreak/TAP',
           position: 'right',
           className: 'navbar-github-link',

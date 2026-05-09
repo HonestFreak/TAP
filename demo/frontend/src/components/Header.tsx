@@ -12,10 +12,17 @@ export function Header({ config }: Props) {
   return (
     <header className="border-b border-[var(--color-border)] bg-[var(--color-surface)]/60 backdrop-blur-sm">
       <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-purple)]">
-            <span className="font-mono text-sm font-bold text-[var(--color-bg)]">T</span>
-          </div>
+        <a
+          href="https://tapprotocol.space"
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-3 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] rounded-md"
+        >
+          <img
+            src="/logo.png"
+            alt="TAP — Token Access Protocol"
+            className="h-9 w-9 object-contain"
+          />
           <div>
             <h1 className="text-base font-semibold tracking-tight text-[var(--color-text)]">
               TAP <span className="text-[var(--color-text-dim)] font-normal">Token Access Protocol</span>
@@ -24,7 +31,7 @@ export function Header({ config }: Props) {
               Streaming LLM inference settled per token on Solana
             </p>
           </div>
-        </div>
+        </a>
         <div className="flex items-center gap-3">
           {config && (
             <>
