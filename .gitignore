@@ -28,6 +28,9 @@ venv/
 .idea/
 .vscode/
 
+.agents/
+.claude/
+
 # Secrets
 .env
 .env.*
