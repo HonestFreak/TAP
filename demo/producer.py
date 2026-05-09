@@ -28,8 +28,15 @@ from tap.producer.server import TapProducer
 from tap.timing.parameters import TimingParameters
 
 
-def _load_keypair(path: str) -> Keypair:
-    raw = json.loads(Path(path).expanduser().read_text())
+def _load_keypair(path_or_json: str) -> Keypair:
+    """Accept either a filesystem path to a keypair JSON, or the JSON array
+    inline. Hosted environments (Render, Fly) inject secrets as env vars,
+    not files, so we support both shapes from the same env var."""
+    text = path_or_json.strip()
+    if text.startswith("["):
+        raw = json.loads(text)
+    else:
+        raw = json.loads(Path(text).expanduser().read_text())
     return Keypair.from_bytes(bytes(raw))
 
 
@@ -67,3 +74,11 @@ async def handle_messages(body: dict) -> object:
 
 
 app = producer.app
+
+
+@app.get("/healthz")
+async def healthz() -> dict:
+    """Unauthenticated liveness probe for hosting platforms (Render, Fly).
+    /v1/messages is x402-shaped (returns 402 by design) so platforms can't
+    use it as a health signal."""
+    return {"status": "ok"}

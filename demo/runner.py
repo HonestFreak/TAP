@@ -26,10 +26,10 @@ from pathlib import Path
 from typing import AsyncIterator
 
 import httpx
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, Header, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 
@@ -43,10 +43,45 @@ PRODUCER_URL = os.environ.get("TAP_PRODUCER_URL", "http://localhost:8000/v1/mess
 RPC_URL = os.environ.get("TAP_RPC", "https://api.devnet.solana.com")
 NETWORK = os.environ.get("TAP_NETWORK", "solana-devnet")
 
+# Comma-separated list of allowed origins for CORS. In dev the Vite proxy
+# means the browser sees the API as same-origin, but a hosted frontend on a
+# different domain (Vercel etc.) needs explicit allow-listing.
+CORS_ORIGINS = [
+    o.strip()
+    for o in os.environ.get("TAP_CORS_ORIGIN", "http://localhost:5173").split(",")
+    if o.strip()
+]
 
-def _load_keypair(path: str) -> Keypair:
-    raw = json.loads(Path(path).expanduser().read_text())
+# Optional shared access code for hosted demos. When set, /api/run and
+# /api/balances require an `X-Tap-Access` header matching this value.
+# Unset (None or empty string) disables the gate, which is what local dev wants.
+ACCESS_CODE = os.environ.get("TAP_ACCESS_CODE") or None
+
+# Hard cap on per-session deposit, in micro-USDC. Defends the shared devnet
+# wallet against abuse even if the access gate is bypassed.
+MAX_DEPOSIT_MICRO = int(os.environ.get("TAP_MAX_DEPOSIT_MICRO", "200000"))
+
+
+def _load_keypair(path_or_json: str) -> Keypair:
+    """Accept either a filesystem path to a keypair JSON, or the JSON array
+    inline. Hosted environments (Render, Fly) inject secrets as env vars,
+    not files, so we support both shapes from the same env var."""
+    text = path_or_json.strip()
+    if text.startswith("["):
+        raw = json.loads(text)
+    else:
+        raw = json.loads(Path(text).expanduser().read_text())
     return Keypair.from_bytes(bytes(raw))
+
+
+def require_access(
+    x_tap_access: str | None = Header(default=None, alias="X-Tap-Access"),
+) -> None:
+    """Reject requests missing the shared access code when one is configured."""
+    if ACCESS_CODE is None:
+        return
+    if x_tap_access != ACCESS_CODE:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "invalid access code")
 
 
 @dataclass(frozen=True, slots=True)
@@ -91,13 +126,20 @@ async def _lifespan(app: FastAPI):
 app = FastAPI(title="TAP Consumer Runner", lifespan=_lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=CORS_ORIGINS,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*", "X-Tap-Access"],
 )
 
 
-@app.get("/api/config")
+@app.get("/healthz")
+async def healthz() -> dict:
+    """Unauthenticated liveness probe for hosting platforms (Render, Fly).
+    Kept separate from /api/* so the access gate covers the real surface."""
+    return {"status": "ok"}
+
+
+@app.get("/api/config", dependencies=[Depends(require_access)])
 async def get_config() -> dict:
     cfg = app.state.config
     return {
@@ -113,7 +155,7 @@ async def get_config() -> dict:
     }
 
 
-@app.get("/api/balances")
+@app.get("/api/balances", dependencies=[Depends(require_access)])
 async def get_balances() -> dict:
     cfg = app.state.config
     chain: ChainClient = app.state.chain
@@ -127,7 +169,10 @@ async def get_balances() -> dict:
 
 class RunRequest(BaseModel):
     prompt: str
-    deposit_micro: int = 50_000
+    # Server-side ceiling on the deposit. Even with the access gate in place,
+    # we never want a single request to be able to drain the shared devnet
+    # wallet — the cap is enforced here regardless of what the client sends.
+    deposit_micro: int = Field(default=50_000, ge=1_000, le=MAX_DEPOSIT_MICRO)
     enforce_schema: bool = True
 
 
@@ -240,7 +285,7 @@ def _noop_evaluator(_: str):
     return Decision.CONTINUE
 
 
-@app.post("/api/run")
+@app.post("/api/run", dependencies=[Depends(require_access)])
 async def run(req: RunRequest) -> StreamingResponse:
     return StreamingResponse(
         _run_session(req),

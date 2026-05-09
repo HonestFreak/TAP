@@ -1,27 +1,80 @@
 // Top-level layout: header + two-column body (output | meter+timeline)
 // + balances rail. Owns the session hook and the config fetch.
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { AccessGate } from './components/AccessGate'
 import { BalancePanel } from './components/BalancePanel'
 import { Header } from './components/Header'
 import { MeterPanel } from './components/MeterPanel'
 import { OutputPanel } from './components/OutputPanel'
 import { PromptForm } from './components/PromptForm'
 import { TimelinePanel } from './components/TimelinePanel'
+import { WakingUpBanner } from './components/WakingUpBanner'
+import { WakingUpOverlay } from './components/WakingUpOverlay'
 import { useTapSession } from './hooks/useTapSession'
-import { fetchConfig } from './lib/api'
+import { AccessDeniedError, fetchConfig } from './lib/api'
 import type { ConfigResponse } from './lib/types'
+
+// Show the cold-start overlay if the runner hasn't responded within this
+// window. Render's free/Starter plans sleep after idle and the first
+// request takes ~30s; tuned generously to avoid flashing the overlay on
+// fast paths.
+const COLD_START_DELAY_MS = 2500
+
+// Show the in-session "waking the producer" banner if the session stays
+// in `opening` past this delay. Same cold-start phenomenon, smaller UI —
+// the user has just clicked send and we don't want to occlude the form.
+const PRODUCER_WAKE_DELAY_MS = 3500
 
 function App() {
   const [config, setConfig] = useState<ConfigResponse | null>(null)
   const [configError, setConfigError] = useState<string | null>(null)
+  const [needsAccess, setNeedsAccess] = useState(false)
+  const [wakingUp, setWakingUp] = useState(false)
   const { state, start, reset } = useTapSession()
 
-  useEffect(() => {
-    fetchConfig()
-      .then(setConfig)
-      .catch((err) => setConfigError(err.message))
+  // Returns true once the runner is reachable AND the access code (if any)
+  // is accepted. AccessGate uses the boolean to decide whether to surface
+  // a "wrong code" message; the wake timer flips on the cold-start
+  // overlay if Render's free tier is sleeping.
+  const loadConfig = useCallback(async (): Promise<boolean> => {
+    const wakeTimer = setTimeout(() => setWakingUp(true), COLD_START_DELAY_MS)
+    try {
+      const cfg = await fetchConfig()
+      setConfig(cfg)
+      setConfigError(null)
+      setNeedsAccess(false)
+      return true
+    } catch (err) {
+      if (err instanceof AccessDeniedError) {
+        setNeedsAccess(true)
+        setConfigError(null)
+        return false
+      }
+      setConfigError((err as Error).message)
+      return false
+    } finally {
+      clearTimeout(wakeTimer)
+      setWakingUp(false)
+    }
   }, [])
+
+  useEffect(() => {
+    void loadConfig()
+  }, [loadConfig])
+
+  // Producer cold-start detection: when a session hangs in `opening`
+  // longer than expected, surface the inline banner. Resets the moment a
+  // streaming/closed/error transition happens.
+  const [producerWaking, setProducerWaking] = useState(false)
+  useEffect(() => {
+    if (state.phase !== 'opening') {
+      setProducerWaking(false)
+      return
+    }
+    const timer = setTimeout(() => setProducerWaking(true), PRODUCER_WAKE_DELAY_MS)
+    return () => clearTimeout(timer)
+  }, [state.phase])
 
   // Trigger balance refresh whenever a session closes — that's when
   // settled USDC actually moves on-chain (after the dispute window).
@@ -29,6 +82,8 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <WakingUpOverlay visible={wakingUp} />
+      {needsAccess && <AccessGate onSubmit={loadConfig} />}
       <Header config={config} />
       <main className="mx-auto w-full max-w-[1400px] flex-1 px-6 py-6">
         {configError && (
@@ -47,6 +102,7 @@ function App() {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6">
           <div className="flex flex-col gap-6 min-w-0">
             <PromptForm onRun={start} onReset={reset} phase={state.phase} />
+            <WakingUpBanner visible={producerWaking} />
             <div className="min-h-[480px]">
               <OutputPanel
                 text={state.accumulated}

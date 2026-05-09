@@ -1,0 +1,28 @@
+[Unit]
+Description=TAP consumer runner — bound to 127.0.0.1:8001
+Documentation=https://github.com/HonestFreak/tap
+After=network-online.target tap-producer.service
+Wants=network-online.target
+Requires=tap-producer.service
+
+[Service]
+Type=simple
+User=tap
+Group=tap
+WorkingDirectory=/home/tap/sol
+EnvironmentFile=/home/tap/.tap.env
+ExecStart=/home/tap/venv/bin/uvicorn demo.runner:app --host 127.0.0.1 --port 8001
+
+Restart=on-failure
+RestartSec=5
+StartLimitIntervalSec=120
+StartLimitBurst=5
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=read-only
+ReadWritePaths=/home/tap/sol
+
+[Install]
+WantedBy=multi-user.target

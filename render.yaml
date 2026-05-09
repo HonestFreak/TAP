@@ -1,0 +1,65 @@
+# Render blueprint — one-click deploy for the two demo Python services.
+#
+# 1. Push this repo to GitHub.
+# 2. In Render, "New" → "Blueprint" and select the repo.
+# 3. Render creates `tap-producer` and `tap-runner`.
+# 4. Fill in the secrets marked `sync: false` (they're never written here).
+# 5. Update TAP_PUBLIC_URL on the producer with its onrender.com URL once
+#    Render allocates one. Same for TAP_PRODUCER_URL on the runner.
+#
+# Frontend is on Vercel — see demo/frontend/.env.example.
+
+services:
+  - type: web
+    name: tap-producer
+    runtime: docker
+    plan: starter
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerCommand: sh -c 'uvicorn demo.producer:app --host 0.0.0.0 --port ${PORT}'
+    healthCheckPath: /healthz
+    envVars:
+      - key: PORT
+        value: "10000"
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: TAP_PRODUCER_KEYPAIR
+        sync: false
+      - key: TAP_PRODUCER_USDC
+        sync: false
+      - key: TAP_RPC
+        sync: false
+      - key: TAP_PUBLIC_URL
+        sync: false
+
+  - type: web
+    name: tap-runner
+    runtime: docker
+    plan: starter
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerCommand: sh -c 'uvicorn demo.runner:app --host 0.0.0.0 --port ${PORT}'
+    healthCheckPath: /healthz
+    envVars:
+      - key: PORT
+        value: "10000"
+      - key: TAP_CONSUMER_KEYPAIR
+        sync: false
+      - key: TAP_PRODUCER_PUBKEY
+        sync: false
+      - key: TAP_PRODUCER_USDC
+        sync: false
+      - key: TAP_PRODUCER_URL
+        sync: false
+      - key: TAP_RPC
+        sync: false
+      - key: TAP_NETWORK
+        value: solana-devnet
+      - key: TAP_ACCESS_CODE
+        sync: false
+      - key: TAP_CORS_ORIGIN
+        sync: false
+      - key: TAP_MAX_DEPOSIT_MICRO
+        value: "200000"

@@ -1,0 +1,30 @@
+[Unit]
+Description=TAP producer (Gemini-backed) — bound to 127.0.0.1:8000
+Documentation=https://github.com/HonestFreak/tap
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=tap
+Group=tap
+WorkingDirectory=/home/tap/sol
+EnvironmentFile=/home/tap/.tap.env
+ExecStart=/home/tap/venv/bin/uvicorn demo.producer:app --host 127.0.0.1 --port 8000
+
+# Bound to localhost — public traffic reaches us only via Caddy on :443.
+# Restart on failure but don't loop forever if the keypair file is missing.
+Restart=on-failure
+RestartSec=5
+StartLimitIntervalSec=120
+StartLimitBurst=5
+
+# Reasonable hardening for a public-facing demo on a small box.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=read-only
+ReadWritePaths=/home/tap/sol
+
+[Install]
+WantedBy=multi-user.target

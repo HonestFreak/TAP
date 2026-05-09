@@ -1,0 +1,29 @@
+# Caddy config for the TAP demo on EC2. Caddy auto-provisions Let's
+# Encrypt certs for any public hostname that resolves to this box, so
+# point both subdomains at the EC2 elastic IP and Caddy handles the rest.
+#
+# Install: drop at /etc/caddy/Caddyfile, then `systemctl reload caddy`.
+
+# Replace these with your actual hostnames.
+{$TAP_RUNNER_HOST:runner.tap.your-domain.com} {
+	reverse_proxy 127.0.0.1:8001 {
+		# SSE: don't buffer — the dashboard relies on per-token push.
+		flush_interval -1
+	}
+	encode zstd gzip
+	log {
+		output file /var/log/caddy/runner.log
+		format console
+	}
+}
+
+{$TAP_PRODUCER_HOST:producer.tap.your-domain.com} {
+	reverse_proxy 127.0.0.1:8000 {
+		flush_interval -1
+	}
+	encode zstd gzip
+	log {
+		output file /var/log/caddy/producer.log
+		format console
+	}
+}

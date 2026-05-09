@@ -1,0 +1,41 @@
+# Speed up Docker builds by skipping artefacts the image doesn't need.
+
+# Node + frontend build outputs
+node_modules
+**/node_modules
+demo/frontend/dist
+demo/frontend/.vite
+docs/build
+docs/.docusaurus
+docs/node_modules
+
+# Rust + Anchor build outputs
+target
+.anchor
+
+# Python
+__pycache__
+**/__pycache__
+*.pyc
+.pytest_cache
+**/.pytest_cache
+.venv
+venv
+
+# Editor / git / OS
+.git
+.gitignore
+.vscode
+.idea
+.DS_Store
+
+# Repo-internal config not needed at runtime
+.agents
+.claude
+.cache
+
+# Local secrets and keypairs (paranoia: should not be in repo, never bake them in)
+*.env
+*.env.*
+keypair*.json
+*-keypair.json
