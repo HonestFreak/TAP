@@ -1,15 +1,9 @@
 """Decoder for the on-chain `Channel` account.
 
-Layout reflects what the **deployed** program writes, which is one revision
-behind `programs/tap/src/state/channel.rs` — the deployed bytecode was
-built before `prepaid_input_micro` and `trailing_buffer_micro` were added.
-Account size on chain is 175 bytes (8 discriminator + 167 payload); the
-source struct is 191 bytes. When the program is redeployed, this decoder
-needs the two missing u64 fields added in the order the source declares.
-
-Anchor serializes accounts as `sha256("account:<TypeName>")[:8]`
-discriminator followed by Borsh-encoded fields. Channel has no Vec/String
-fields, so the layout is fully static and trivial to decode without
+Field layout MUST mirror `programs/tap/src/state/channel.rs::Channel`. Anchor
+serializes accounts as `sha256("account:<TypeName>")[:8]` discriminator
+followed by Borsh-encoded fields. Channel has no Vec/String fields, so the
+layout is fully static (191 bytes total) and trivial to decode without
 pulling in a Borsh runtime.
 
 Used by the settler worker (`tap.producer.settler`) to find channels whose
@@ -50,6 +44,8 @@ class ChannelAccount:
     deposit_micro: int
     input_price_micro: int
     output_price_micro: int
+    prepaid_input_micro: int
+    trailing_buffer_micro: int
     last_sequence: int
     last_cumulative_paid: int
     expires_at: int
@@ -69,6 +65,8 @@ STATUS_OFFSET = (
     + 8                    # nonce
     + 32 + 32 + 32         # consumer, producer, session_key
     + 8 + 8 + 8            # deposit, input_price, output_price
+    + 8                    # prepaid_input_micro
+    + 8                    # trailing_buffer_micro
     + 8 + 8                # last_sequence, last_cumulative_paid
     + 8                    # expires_at
     + 8 + 4                # settled_at, dispute_secs
@@ -97,6 +95,8 @@ def decode_channel(data: bytes) -> ChannelAccount:
     deposit_micro = int.from_bytes(data[o:o + 8], "little"); o += 8
     input_price_micro = int.from_bytes(data[o:o + 8], "little"); o += 8
     output_price_micro = int.from_bytes(data[o:o + 8], "little"); o += 8
+    prepaid_input_micro = int.from_bytes(data[o:o + 8], "little"); o += 8
+    trailing_buffer_micro = int.from_bytes(data[o:o + 8], "little"); o += 8
     last_sequence = int.from_bytes(data[o:o + 8], "little"); o += 8
     last_cumulative_paid = int.from_bytes(data[o:o + 8], "little"); o += 8
     # Solana clock timestamps are i64 seconds; can technically be negative in
@@ -116,6 +116,8 @@ def decode_channel(data: bytes) -> ChannelAccount:
         deposit_micro=deposit_micro,
         input_price_micro=input_price_micro,
         output_price_micro=output_price_micro,
+        prepaid_input_micro=prepaid_input_micro,
+        trailing_buffer_micro=trailing_buffer_micro,
         last_sequence=last_sequence,
         last_cumulative_paid=last_cumulative_paid,
         expires_at=expires_at,
