@@ -8,7 +8,7 @@ sidebar_position: 1
 The TAP Anchor program lives at `programs/tap/` in the repo. Four
 instructions; one Channel PDA per session.
 
-Devnet program ID: `2tqofcitv1LHFGCLCmR9Kyke6TmArQwpHSinWWtmCje9`
+Devnet program ID: `FK1ejU1ua497e8TcuabUTm7vxqf6WdKyYXA6ZhxmNWbX`
 
 ## Channel state
 

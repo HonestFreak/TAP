@@ -24,7 +24,7 @@ pub use state::commitment::CommitMessage;
 use constants::{CHANNEL_SEED, VAULT_SEED};
 use state::channel::{Channel, ChannelStatus};
 
-declare_id!("2tqofcitv1LHFGCLCmR9Kyke6TmArQwpHSinWWtmCje9");
+declare_id!("FK1ejU1ua497e8TcuabUTm7vxqf6WdKyYXA6ZhxmNWbX");
 
 // ---------------------------------------------------------------------------
 // Account contexts — one struct per instruction entry point

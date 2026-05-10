@@ -6,10 +6,10 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-tap = "2tqofcitv1LHFGCLCmR9Kyke6TmArQwpHSinWWtmCje9"
+tap = "FK1ejU1ua497e8TcuabUTm7vxqf6WdKyYXA6ZhxmNWbX"
 
 [programs.devnet]
-tap = "2tqofcitv1LHFGCLCmR9Kyke6TmArQwpHSinWWtmCje9"
+tap = "FK1ejU1ua497e8TcuabUTm7vxqf6WdKyYXA6ZhxmNWbX"
 
 [registry]
 url = "https://api.apr.dev"

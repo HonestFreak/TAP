@@ -15,7 +15,7 @@ export default function CtaFooter(): JSX.Element {
           wraps Gemini 2.5 Flash; adapters are scaffolded for Anthropic,
           OpenAI, and local Ollama. The on-chain program is deployed to
           Solana devnet under{' '}
-          <code>2tqofcitv1LHFGCLCmR9Kyke6TmArQwpHSinWWtmCje9</code>.
+          <code>FK1ejU1ua497e8TcuabUTm7vxqf6WdKyYXA6ZhxmNWbX</code>.
         </p>
         <div className={styles.actions}>
           <Link to="/sdk/install" className={styles.primary}>Install the SDK</Link>

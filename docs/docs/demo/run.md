@@ -33,7 +33,7 @@ pip install -r demo/requirements.txt   # uvicorn, fastapi, httpx
 (cd demo/frontend && npm install)
 
 # Anchor program — already deployed to devnet at
-# 2tqofcitv1LHFGCLCmR9Kyke6TmArQwpHSinWWtmCje9.
+# FK1ejU1ua497e8TcuabUTm7vxqf6WdKyYXA6ZhxmNWbX.
 # To redeploy a local build: anchor deploy --provider.cluster devnet
 ```
 
