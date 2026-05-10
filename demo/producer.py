@@ -13,14 +13,12 @@ The producer exposes one endpoint, `/v1/messages`, that:
 
 from __future__ import annotations
 
-import json
 import os
-from pathlib import Path
 
-from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 
 from tap.adapters.gemini import stream_gemini
+from tap.chain.keypair_io import load_keypair
 from tap.chain.program_id import USDC_MINT_DEVNET
 from tap.chain.rpc import ChainClient
 from tap.producer.pricing import Pricing
@@ -28,19 +26,7 @@ from tap.producer.server import TapProducer
 from tap.timing.parameters import TimingParameters
 
 
-def _load_keypair(path_or_json: str) -> Keypair:
-    """Accept either a filesystem path to a keypair JSON, or the JSON array
-    inline. Hosted environments (Render, Fly) inject secrets as env vars,
-    not files, so we support both shapes from the same env var."""
-    text = path_or_json.strip()
-    if text.startswith("["):
-        raw = json.loads(text)
-    else:
-        raw = json.loads(Path(text).expanduser().read_text())
-    return Keypair.from_bytes(bytes(raw))
-
-
-KEYPAIR = _load_keypair(os.environ["TAP_PRODUCER_KEYPAIR"])
+KEYPAIR = load_keypair(os.environ["TAP_PRODUCER_KEYPAIR"])
 PRODUCER_USDC = Pubkey.from_string(os.environ["TAP_PRODUCER_USDC"])
 RPC_URL = os.environ.get("TAP_RPC", "https://api.devnet.solana.com")
 PUBLIC_BASE_URL = os.environ.get("TAP_PUBLIC_URL", "http://localhost:8000")

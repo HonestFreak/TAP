@@ -7,18 +7,16 @@ information to the on-stage panel described in whitepaper §6.4."""
 from __future__ import annotations
 
 import asyncio
-import json
 import os
-from pathlib import Path
 
 from rich.console import Console, Group
 from rich.live import Live
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
-from solders.keypair import Keypair
 
 from tap import TapConsumer, evaluators
+from tap.chain.keypair_io import load_keypair
 from tap.chain.rpc import ChainClient
 
 PRODUCER_URL = os.environ.get("TAP_PRODUCER_URL", "http://localhost:8000/v1/messages")
@@ -39,9 +37,7 @@ def _render(text: str, paid_micro: int, tokens: int, halted: str | None) -> Grou
 
 
 async def main() -> None:
-    wallet = Keypair.from_bytes(
-        bytes(json.loads(Path(os.environ["TAP_CONSUMER_KEYPAIR"]).expanduser().read_text()))
-    )
+    wallet = load_keypair(os.environ["TAP_CONSUMER_KEYPAIR"])
 
     async with ChainClient(RPC_URL) as chain, TapConsumer(wallet=wallet, chain=chain) as consumer:
         session = await consumer.open_session(

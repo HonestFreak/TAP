@@ -22,7 +22,6 @@ import json
 import os
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from pathlib import Path
 from typing import AsyncIterator
 
 import httpx
@@ -34,6 +33,7 @@ from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 
 from tap import TapConsumer, evaluators
+from tap.chain.keypair_io import load_keypair
 from tap.chain.pda import derive_ata
 from tap.chain.program_id import PROGRAM_ID, USDC_MINT_DEVNET
 from tap.chain.rpc import ChainClient
@@ -62,18 +62,6 @@ ACCESS_CODE = os.environ.get("TAP_ACCESS_CODE") or None
 MAX_DEPOSIT_MICRO = int(os.environ.get("TAP_MAX_DEPOSIT_MICRO", "200000"))
 
 
-def _load_keypair(path_or_json: str) -> Keypair:
-    """Accept either a filesystem path to a keypair JSON, or the JSON array
-    inline. Hosted environments (Render, Fly) inject secrets as env vars,
-    not files, so we support both shapes from the same env var."""
-    text = path_or_json.strip()
-    if text.startswith("["):
-        raw = json.loads(text)
-    else:
-        raw = json.loads(Path(text).expanduser().read_text())
-    return Keypair.from_bytes(bytes(raw))
-
-
 def require_access(
     x_tap_access: str | None = Header(default=None, alias="X-Tap-Access"),
 ) -> None:
@@ -99,7 +87,7 @@ class _Config:
 
 @asynccontextmanager
 async def _lifespan(app: FastAPI):
-    consumer_kp = _load_keypair(os.environ["TAP_CONSUMER_KEYPAIR"])
+    consumer_kp = load_keypair(os.environ["TAP_CONSUMER_KEYPAIR"])
     producer_pk = Pubkey.from_string(os.environ["TAP_PRODUCER_PUBKEY"])
     producer_usdc = Pubkey.from_string(os.environ["TAP_PRODUCER_USDC"])
     consumer_usdc = derive_ata(consumer_kp.pubkey(), USDC_MINT_DEVNET)

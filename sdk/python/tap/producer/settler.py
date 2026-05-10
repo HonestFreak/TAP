@@ -25,7 +25,6 @@ import asyncio
 import logging
 import time
 from dataclasses import dataclass
-from typing import Iterable
 
 from solana.rpc.types import MemcmpOpts
 from solders.keypair import Keypair
@@ -183,20 +182,3 @@ class Settler:
         )
 
 
-def settler_filter_iter(
-    accounts: Iterable[tuple[Pubkey, bytes]],
-    *,
-    now: int,
-    clock_slack: int = 5,
-) -> Iterable[_Pending]:
-    """Pure helper exposed for tests: filter `accounts` to those past their
-    dispute window. Kept separate from `Settler._find_ready` so callers can
-    exercise the predicate without spinning up an RPC client."""
-    for address, data in accounts:
-        try:
-            channel = decode_channel(data)
-        except ValueError:
-            continue
-        dispute_until = channel.settled_at + channel.dispute_secs
-        if now >= dispute_until + clock_slack:
-            yield _Pending(address=address, account=channel)

@@ -10,13 +10,10 @@ to verify the producer's `input_token_count`, and only then opens the channel.""
 from __future__ import annotations
 
 import asyncio
-import json
 import os
-from pathlib import Path
-
-from solders.keypair import Keypair
 
 from tap import TapConsumer, evaluators
+from tap.chain.keypair_io import load_keypair
 from tap.chain.rpc import ChainClient
 
 PRODUCER_URL = os.environ.get("TAP_PRODUCER_URL", "http://localhost:8000/v1/messages")
@@ -45,13 +42,8 @@ PROMPT_BODY = {
 }
 
 
-def _load_wallet(path: str) -> Keypair:
-    raw = json.loads(Path(path).expanduser().read_text())
-    return Keypair.from_bytes(bytes(raw))
-
-
 async def main() -> None:
-    wallet = _load_wallet(os.environ["TAP_CONSUMER_KEYPAIR"])
+    wallet = load_keypair(os.environ["TAP_CONSUMER_KEYPAIR"])
 
     async with ChainClient(RPC_URL) as chain, TapConsumer(wallet=wallet, chain=chain) as consumer:
         session = await consumer.open_session(

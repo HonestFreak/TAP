@@ -14,31 +14,20 @@ CLI is for *one-shot* maintenance only — running both at once is fine
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
 import os
 import sys
-from pathlib import Path
 
-from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 
+from tap.chain.keypair_io import load_keypair
 from tap.chain.program_id import PROGRAM_ID
 from tap.chain.rpc import ChainClient
 from tap.producer.settler import Settler
 
 
-def _load_keypair(path_or_json: str) -> Keypair:
-    text = path_or_json.strip()
-    if text.startswith("["):
-        raw = json.loads(text)
-    else:
-        raw = json.loads(Path(text).expanduser().read_text())
-    return Keypair.from_bytes(bytes(raw))
-
-
 async def _run() -> int:
-    keypair = _load_keypair(os.environ["TAP_PRODUCER_KEYPAIR"])
+    keypair = load_keypair(os.environ["TAP_PRODUCER_KEYPAIR"])
     producer_usdc = Pubkey.from_string(os.environ["TAP_PRODUCER_USDC"])
     rpc_url = os.environ.get("TAP_RPC", "https://api.devnet.solana.com")
 
