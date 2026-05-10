@@ -17,6 +17,7 @@ logic."""
 
 from __future__ import annotations
 
+import asyncio
 import base64
 import json
 import logging
@@ -120,6 +121,10 @@ class TapProducer:
 
         self._registry = ChannelRegistry()
         self._routes: dict[str, _Route] = {}
+        # Background settle tasks per session. Held strongly so asyncio
+        # doesn't GC them — the SSE response that triggered them has
+        # already finished sending bytes by the time settle lands on chain.
+        self._pending_settles: set[asyncio.Task[Any]] = set()
         # The settler picks up *any* of our channels in `Settling` past the
         # dispute window — including ones that survived a process restart,
         # which an in-process `asyncio.sleep` timer could never recover.
@@ -349,30 +354,72 @@ class TapProducer:
             # chunked-encoded body and surfaces a confusing transport error
             # instead of the actual upstream failure.
             try:
-                async for chunk in encode_sse(wrapped):
-                    yield chunk
-            except Exception as exc:
-                payload = json.dumps(
-                    {"error": f"{type(exc).__name__}: {exc}"},
-                    separators=(",", ":"),
-                )
-                yield f"data: {payload}\n\n"
-                yield "data: [DONE]\n\n"
-            try:
-                await settle_channel(
-                    chain=self._chain,
-                    producer=self._keypair,
-                    producer_usdc=self._producer_usdc,
-                    channel=channel,
-                )
-                # No timer needed: the settler polls on-chain state and will
-                # pick this channel up once `settled_at + dispute_secs` is in
-                # the past, even if the process restarts in the meantime.
+                try:
+                    async for chunk in encode_sse(wrapped):
+                        yield chunk
+                except Exception as exc:
+                    payload = json.dumps(
+                        {"error": f"{type(exc).__name__}: {exc}"},
+                        separators=(",", ":"),
+                    )
+                    yield f"data: {payload}\n\n"
+                    yield "data: [DONE]\n\n"
             finally:
-                await self._registry.remove(channel.channel_id)
+                # Settle MUST run as a separate task: doing it inline here
+                # races with Starlette's `aclose()` of the SSE generator
+                # (client disconnect, response finalize) and the settle code
+                # gets dropped on the floor without a log line. As a task
+                # it's owned by the event loop, not the generator's frame.
+                self._spawn_settle_task(channel)
 
         return StreamingResponse(
             event_source(),
             media_type="text/event-stream",
             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
         )
+
+    def _spawn_settle_task(self, channel: ActiveChannel) -> None:
+        """Schedule `settle` for `channel` in a fresh task. Strong-refs the
+        task on `self` so the event loop doesn't GC it mid-flight. The task
+        always logs its outcome — without a log line, a failing settle is
+        invisible because the SSE response that initiated it has long since
+        finished writing bytes to the wire."""
+        task = asyncio.create_task(
+            self._settle_and_cleanup(channel),
+            name=f"tap-settle-{channel.channel_id}",
+        )
+        self._pending_settles.add(task)
+        task.add_done_callback(self._pending_settles.discard)
+
+    async def _settle_and_cleanup(self, channel: ActiveChannel) -> None:
+        try:
+            if channel.last_commitment is None:
+                _log.warning(
+                    "skipping settle for channel %s: no accepted commitment",
+                    channel.channel_id,
+                )
+                return
+            result = await settle_channel(
+                chain=self._chain,
+                producer=self._keypair,
+                producer_usdc=self._producer_usdc,
+                channel=channel,
+            )
+            _log.info(
+                "settled channel %s in tx %s (paid=%d)",
+                channel.channel_id,
+                result.signature,
+                channel.last_commitment.message.cumulative_paid,
+            )
+        except Exception:
+            # `exception()` includes the traceback — exactly what was missing
+            # before. The producer process keeps running; the settler will
+            # retry on its own poll cadence if it ever needs to.
+            _log.exception("settle failed for channel %s", channel.channel_id)
+        finally:
+            try:
+                await self._registry.remove(channel.channel_id)
+            except Exception:
+                _log.exception(
+                    "registry cleanup failed for channel %s", channel.channel_id
+                )
