@@ -4,7 +4,12 @@
 // and then read the streaming SSE response with `fetch` + a manual reader.
 // Each `data: {...}\n\n` block is parsed and pushed as a typed event.
 
-import type { BalancesResponse, ConfigResponse, SessionEvent } from './types'
+import type {
+  BalancesResponse,
+  ChannelSignaturesResponse,
+  ConfigResponse,
+  SessionEvent,
+} from './types'
 
 // In dev the Vite proxy maps `/api` → localhost:8001, so an empty base is
 // what we want. In production the runner is on a different origin and
@@ -54,6 +59,18 @@ export async function fetchBalances(): Promise<BalancesResponse> {
   const r = await fetch(`${API_BASE}/api/balances`, { headers: authHeaders() })
   await checkAuth(r)
   if (!r.ok) throw new Error(`balances fetch failed: ${r.status}`)
+  return r.json()
+}
+
+export async function fetchChannelSignatures(
+  channelId: string,
+): Promise<ChannelSignaturesResponse> {
+  const r = await fetch(
+    `${API_BASE}/api/sessions/${encodeURIComponent(channelId)}/signatures`,
+    { headers: authHeaders() },
+  )
+  await checkAuth(r)
+  if (!r.ok) throw new Error(`signatures fetch failed: ${r.status}`)
   return r.json()
 }
 

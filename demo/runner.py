@@ -167,6 +167,25 @@ async def get_balances() -> dict:
     }
 
 
+@app.get(
+    "/api/sessions/{channel_id}/signatures",
+    dependencies=[Depends(require_access)],
+)
+async def get_session_signatures(channel_id: str) -> dict:
+    """List the on-chain transactions that touched this channel PDA, oldest
+    first. Used by the demo's explorer panel so users can click through to
+    Solscan and see the open / settle / close lifecycle land in real time
+    without having to copy/paste signatures."""
+    chain: ChainClient = app.state.chain
+    try:
+        address = Pubkey.from_string(channel_id)
+    except (ValueError, TypeError) as exc:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "invalid channel_id") from exc
+    sigs = await chain.signatures_for_address(address, limit=10)
+    sigs.sort(key=lambda s: s["slot"])
+    return {"channel_id": channel_id, "signatures": sigs}
+
+
 class RunRequest(BaseModel):
     prompt: str
     # Server-side ceiling on the deposit. Even with the access gate in place,

@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import base64
 import json
+import logging
 from dataclasses import dataclass
 from typing import Any
 
@@ -36,6 +37,7 @@ from tap.producer.handler_types import HandlerFn
 from tap.producer.pricing import Pricing
 from tap.producer.registry import ChannelRegistry
 from tap.producer.settle import settle_channel
+from tap.producer.settler import Settler
 from tap.producer.sse import encode_sse
 from tap.producer.verifier import accept_commitment
 from tap.producer.wrap_stream import wrap_stream
@@ -51,6 +53,17 @@ from tap.x402.headers import (
 from tap.x402.payment import decode_payment
 from tap.x402.requirements import PaymentRequirements, SCHEME, encode_requirements
 from tap.x402.response import PaymentResponse, encode_response
+
+_log = logging.getLogger(__name__)
+
+# On-chain dispute window we advertise in `_build_requirements`. The settler
+# waits past `settled_at + dispute_secs` before calling `close`; the value
+# itself is enforced on-chain, this is just the producer's negotiated terms.
+_DISPUTE_SECS = 30
+
+# How often the settler scans for channels ready to close. Trades RPC load
+# against worst-case time-to-close after the dispute window expires.
+_SETTLER_POLL_SECS = 10.0
 
 
 @dataclass(slots=True)
@@ -107,6 +120,24 @@ class TapProducer:
         self._registry = ChannelRegistry()
         self._routes: dict[str, _Route] = {}
         self._app = FastAPI(title="TAP Producer", docs_url=None, redoc_url=None)
+        # The settler picks up *any* of our channels in `Settling` past the
+        # dispute window — including ones that survived a process restart,
+        # which an in-process `asyncio.sleep` timer could never recover.
+        self._settler = Settler(
+            chain=self._chain,
+            program_id=self._program_id,
+            producer=self._keypair,
+            producer_usdc=self._producer_usdc,
+            poll_interval_secs=_SETTLER_POLL_SECS,
+        )
+        self._app.add_event_handler("startup", self._on_startup)
+        self._app.add_event_handler("shutdown", self._on_shutdown)
+
+    async def _on_startup(self) -> None:
+        self._settler.start()
+
+    async def _on_shutdown(self) -> None:
+        await self._settler.stop()
 
     @property
     def app(self) -> FastAPI:
@@ -237,7 +268,7 @@ class TapProducer:
             max_unpaid_micro=self._pricing.max_unpaid_micro,
             trailing_buffer_tokens=self._pricing.trailing_buffer_tokens,
             duration_secs=self._timing.total_session_ms // 1_000,
-            dispute_secs=30,
+            dispute_secs=_DISPUTE_SECS,
             grace_ms=self._timing.grace_ms,
             pause_timeout_ms=self._timing.pause_timeout_ms,
             channel_open_url=f"{self._public_base_url}{path}",
@@ -322,6 +353,9 @@ class TapProducer:
                     producer_usdc=self._producer_usdc,
                     channel=channel,
                 )
+                # No timer needed: the settler polls on-chain state and will
+                # pick this channel up once `settled_at + dispute_secs` is in
+                # the past, even if the process restarts in the meantime.
             finally:
                 await self._registry.remove(channel.channel_id)
 

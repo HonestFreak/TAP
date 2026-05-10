@@ -11,7 +11,7 @@ from dataclasses import dataclass
 
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Confirmed
-from solana.rpc.types import TxOpts
+from solana.rpc.types import MemcmpOpts, TxOpts
 from solders.hash import Hash
 from solders.instruction import Instruction
 from solders.keypair import Keypair
@@ -93,3 +93,44 @@ class ChainClient:
         if resp.value is None:
             return 0
         return int(resp.value.amount)
+
+    async def get_program_accounts(
+        self,
+        program_id: Pubkey,
+        *,
+        filters: list[MemcmpOpts | int] | None = None,
+    ) -> list[tuple[Pubkey, bytes]]:
+        """List program-owned accounts matching `filters`, returning each as
+        `(pubkey, raw_data)`. Thin wrapper around solana-py's typed RPC; the
+        settler uses this to find channels in `Settling` status."""
+        resp = await self._client.get_program_accounts(
+            program_id, encoding="base64", filters=filters
+        )
+        out: list[tuple[Pubkey, bytes]] = []
+        for entry in resp.value:
+            data = entry.account.data
+            # solana-py returns either bytes (already decoded) or a tuple of
+            # (encoded_str, encoding); normalise to bytes.
+            if isinstance(data, (bytes, bytearray)):
+                out.append((entry.pubkey, bytes(data)))
+            else:
+                import base64
+                out.append((entry.pubkey, base64.b64decode(data[0])))
+        return out
+
+    async def signatures_for_address(
+        self, address: Pubkey, *, limit: int = 10
+    ) -> list[dict[str, object]]:
+        """Most-recent-first list of confirmed signatures touching `address`,
+        normalised to plain dicts so callers don't need the solders type
+        surface. Powers the demo's "open / settle / close" explorer panel."""
+        resp = await self._client.get_signatures_for_address(address, limit=limit)
+        return [
+            {
+                "signature":  str(item.signature),
+                "slot":       int(item.slot),
+                "block_time": int(item.block_time) if item.block_time is not None else None,
+                "err":        item.err,
+            }
+            for item in resp.value
+        ]

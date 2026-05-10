@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { AccessGate } from './components/AccessGate'
 import { BalancePanel } from './components/BalancePanel'
+import { ExplorerPanel } from './components/ExplorerPanel'
 import { Header } from './components/Header'
 import { MeterPanel } from './components/MeterPanel'
 import { OutputPanel } from './components/OutputPanel'
@@ -111,6 +112,10 @@ function App() {
               />
             </div>
             <TimelinePanel channel={state.channel} commits={state.commits} />
+            <ExplorerPanel
+              channelId={state.channel?.channel_id ?? null}
+              phase={state.phase}
+            />
           </div>
 
           <aside className="flex flex-col gap-6">

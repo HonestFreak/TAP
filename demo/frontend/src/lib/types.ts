@@ -72,3 +72,19 @@ export type SessionEvent =
   | CommitSignedEvent
   | CompleteEvent
   | ErrorEvent
+
+/** One on-chain tx that touched the channel PDA. Returned by
+ *  GET /api/sessions/:channel_id/signatures. Sorted oldest-first. */
+export interface ChannelSignature {
+  signature: string
+  slot: number
+  /** Unix seconds; null while the cluster is still indexing. */
+  block_time: number | null
+  /** Solana RPC error object, or null on success. */
+  err: unknown
+}
+
+export interface ChannelSignaturesResponse {
+  channel_id: string
+  signatures: ChannelSignature[]
+}
