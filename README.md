@@ -84,7 +84,7 @@ tap/
 │   ├── chain/                # PDA derivation, instruction builders, RPC
 │   ├── x402/                 # x402 wire format (requirements, payment, response)
 │   ├── consumer/             # TapConsumer + session orchestration + adaptive batching
-│   ├── producer/             # TapProducer + verifier + settlement
+│   ├── producer/             # TapProducer + verifier + settlement + auto-close settler
 │   ├── adapters/             # Gemini (live) · Anthropic / OpenAI / Ollama (scaffolded)
 │   ├── evaluators/           # JSON schema, length, topic, repetition, content policy
 │   ├── tokenizer.py          # tokenizer registry for §4.9 prompt-token quoting

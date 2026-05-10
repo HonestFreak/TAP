@@ -71,6 +71,12 @@ uvicorn demo.producer:app --host 0.0.0.0 --port 8000
    arriving past the pause window.
 6. **Settles on-chain** when the session ends — assembling the
    Ed25519 verify ix + the `settle` ix into one transaction.
+7. **Closes channels after the dispute window** — a built-in
+   background `Settler` polls `getProgramAccounts` on a 10s cadence
+   for channels in `Settling` past `settled_at + dispute_secs` and
+   submits `close` automatically, so USDC moves to the producer ATA
+   without operator intervention. Survives process restarts because
+   it relies on on-chain state rather than in-memory timers.
 
 ## Endpoints mounted by `handler(path)`
 
@@ -178,19 +184,40 @@ the grace window) until a fresh commit arrives.
 ## Settlement
 
 When the stream ends — completed, halted by the consumer, or halted
-by the producer — `event_source` calls `settle_channel`, which:
+by the producer — the producer schedules `settle_channel` as a
+background task (decoupled from the SSE generator's lifecycle, so a
+client disconnect or response finalize can't cancel it):
 
 1. Builds an Ed25519 verify instruction that asserts the latest
    commit's signature against the channel's session key.
 2. Builds the `settle` instruction carrying the canonical commit
    bytes plus the same signature.
 3. Submits both as one transaction signed by the producer keypair.
-4. Removes the channel from the in-memory `ChannelRegistry`.
+4. Logs success / failure to the producer's stdout.
+5. Removes the channel from the in-memory `ChannelRegistry`.
 
 If no commit was ever received (the consumer paid prefill but the
 producer halted before any output token landed), the on-chain
 program treats `cumulative_paid` as exactly `prepaid_input_micro`
 (see Appendix A.2 of the [whitepaper](/whitepaper)).
 
-After the dispute window the producer (or the consumer) calls
-`close` to actually move USDC.
+## Auto-close (`Settler`)
+
+`TapProducer` boots a `tap.producer.settler.Settler` in its FastAPI
+lifespan. The worker:
+
+1. On a 10s cadence, calls `getProgramAccounts` filtered by `status =
+   Settling` and `producer = self.pubkey()`.
+2. Decodes each match with `tap.chain.channel_account.decode_channel`.
+3. For any whose `settled_at + dispute_secs + 5s slack` is in the past,
+   submits the `close` instruction. The 5s slack absorbs producer-host
+   vs. cluster clock skew.
+4. Logs each successful close (`paid` / `refund`) and warns on failure
+   without aborting the loop.
+
+A one-shot CLI is also exposed for cron / maintenance use:
+
+```bash
+TAP_PRODUCER_KEYPAIR=... TAP_PRODUCER_USDC=... \
+  python -m tap.producer.settler_cli
+```

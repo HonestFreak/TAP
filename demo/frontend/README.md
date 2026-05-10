@@ -21,6 +21,7 @@ demo/frontend/
 │   │   ├── OutputPanel.tsx      # live token stream
 │   │   ├── MeterPanel.tsx       # tokens, paid, refundable, halt status
 │   │   ├── TimelinePanel.tsx    # channel-open + commitment timeline
+│   │   ├── ExplorerPanel.tsx    # polls /api/sessions/.../signatures; Solscan links
 │   │   ├── BalancePanel.tsx     # consumer / producer USDC balances
 │   │   └── ui/                  # Pill, Stat, Hash primitives
 │   ├── index.css                # Tailwind v4 + theme tokens

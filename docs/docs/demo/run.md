@@ -83,8 +83,11 @@ evaluator halt mid-stream.
 4. `TapConsumer` signs commits every K tokens; the React side
    renders each as a timeline event.
 5. When the evaluator halts (or the stream completes), the producer
-   submits `settle` on-chain. After the dispute window, `close`
-   moves USDC.
+   submits `settle` on-chain. The producer also runs a background
+   **settler** that polls for its own channels in `Settling` past the
+   dispute window and submits `close` automatically — so USDC actually
+   moves to the producer's USDC ATA without manual intervention,
+   typically ~35–45s after settle confirms.
 
 ## Quick smoke test (no chain involvement)
 

@@ -35,12 +35,13 @@ keeping two consumers in sync. Instead the browser drives a small
 backend (`runner.py`) that wraps `TapConsumer` and pushes session
 events as SSE.
 
-The runner exposes three endpoints:
+The runner exposes four endpoints:
 
 | Method | Path | Description |
 | --- | --- | --- |
-| `GET` | `/api/config` | Static info (network, addresses) |
-| `GET` | `/api/balances` | Live consumer + producer USDC balances |
+| `GET`  | `/api/config` | Static info (network, addresses) |
+| `GET`  | `/api/balances` | Live consumer + producer USDC balances |
+| `GET`  | `/api/sessions/{channel_id}/signatures` | Confirmed txs touching the channel PDA, oldest first — feeds the explorer panel |
 | `POST` | `/api/run` | Accepts a prompt; streams session events as SSE |
 
 ## Frontend layout
@@ -53,6 +54,7 @@ The runner exposes three endpoints:
 | `OutputPanel.tsx` | Streamed text, halt banner |
 | `MeterPanel.tsx` | Tokens, paid USDC, prepaid input, output spend, refundable, commits |
 | `TimelinePanel.tsx` | Channel-open + per-commit timeline |
+| `ExplorerPanel.tsx` | Polls `/api/sessions/.../signatures`; renders open / settle / close tx rows with Solscan links |
 | `BalancePanel.tsx` | Consumer + producer USDC balances, refresh on session close |
 
 State flows through one hook (`useTapSession`) that:

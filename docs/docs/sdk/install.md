@@ -51,7 +51,10 @@ Lower-level layers — exposed for custom integrations:
 | `tap.x402.*` | x402 wire-format codecs | [x402](/sdk/x402) |
 | `tap.chain.instructions` | `open_channel` / `settle` / `dispute` / `close` builders | [On-chain](/protocol/on-chain) |
 | `tap.chain.pda` | Channel + vault PDA derivation | [On-chain](/protocol/on-chain) |
+| `tap.chain.channel_account` | Decoder for the on-chain `Channel` account | [On-chain](/protocol/on-chain) |
+| `tap.chain.keypair_io.load_keypair` | Load a keypair from a path or inline JSON array | — |
 | `tap.chain.rpc.ChainClient` | Thin async-RPC convenience wrapper | — |
+| `tap.producer.settler.Settler` | Auto-closes settled channels past the dispute window | [Producer](/sdk/producer#auto-close-settler) |
 | `tap.evaluators.*` | JSON schema, length, topic, repetition, content policy | [Evaluators](/sdk/evaluators) |
 | `tap.adapters.*` | Anthropic / OpenAI / Gemini / Ollama wrappers | [Producer](/sdk/producer#adapters) |
 
