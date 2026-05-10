@@ -20,6 +20,7 @@ from __future__ import annotations
 import base64
 import json
 import logging
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import Any
 
@@ -119,7 +120,6 @@ class TapProducer:
 
         self._registry = ChannelRegistry()
         self._routes: dict[str, _Route] = {}
-        self._app = FastAPI(title="TAP Producer", docs_url=None, redoc_url=None)
         # The settler picks up *any* of our channels in `Settling` past the
         # dispute window — including ones that survived a process restart,
         # which an in-process `asyncio.sleep` timer could never recover.
@@ -130,14 +130,26 @@ class TapProducer:
             producer_usdc=self._producer_usdc,
             poll_interval_secs=_SETTLER_POLL_SECS,
         )
-        self._app.add_event_handler("startup", self._on_startup)
-        self._app.add_event_handler("shutdown", self._on_shutdown)
 
-    async def _on_startup(self) -> None:
-        self._settler.start()
+        # FastAPI's `lifespan=` is the post-0.110 replacement for the now-
+        # removed `add_event_handler("startup"/"shutdown", ...)`. We bind the
+        # settler's start/stop into one async context manager.
+        settler = self._settler
 
-    async def _on_shutdown(self) -> None:
-        await self._settler.stop()
+        @asynccontextmanager
+        async def lifespan(_app: FastAPI):
+            settler.start()
+            try:
+                yield
+            finally:
+                await settler.stop()
+
+        self._app = FastAPI(
+            title="TAP Producer",
+            docs_url=None,
+            redoc_url=None,
+            lifespan=lifespan,
+        )
 
     @property
     def app(self) -> FastAPI:
