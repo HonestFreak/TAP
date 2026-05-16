@@ -10,7 +10,7 @@ editable:
 
 ```bash
 git clone https://github.com/HonestFreak/TAP
-cd sol
+cd TAP
 pip install -e sdk/python
 ```
 
