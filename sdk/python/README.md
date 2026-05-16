@@ -38,19 +38,24 @@ async with ChainClient("https://api.devnet.solana.com") as chain, \
 ## Producer
 
 ```python
+from solders.pubkey import Pubkey
+
 from tap import TapProducer
 from tap.adapters.anthropic import stream_anthropic
+from tap.chain.keypair_io import load_keypair
 from tap.chain.rpc import ChainClient
 from tap.producer.pricing import Pricing
 
 producer = TapProducer(
-    keypair=load_keypair(...),
-    producer_usdc=load_pubkey(...),
+    keypair=load_keypair("~/.config/solana/producer.json"),
+    producer_usdc=Pubkey.from_string("<producer USDC ATA>"),
     chain=ChainClient("https://api.devnet.solana.com"),
     pricing=Pricing(
-        token_price_micro=5,
+        input_price_micro=1,              # 0.000001 USDC per prompt token
+        output_price_micro=5,              # 0.000005 USDC per output token
         max_unpaid_micro=5_000,
         trailing_buffer_tokens=10,
+        tokenizer_id="tap.tok.v1",        # must be registered before construction
     ),
 )
 
