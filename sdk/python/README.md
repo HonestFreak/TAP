@@ -5,11 +5,15 @@ LLM inference on Solana.
 
 ## Install
 
+The SDK is not yet published to PyPI. Install editable from a clone:
+
 ```bash
-pip install tap-protocol            # core
-pip install 'tap-protocol[anthropic]' # + Anthropic adapter
-pip install 'tap-protocol[openai]'    # + OpenAI adapter
-pip install 'tap-protocol[ollama]'    # + Ollama adapter
+git clone https://github.com/HonestFreak/TAP
+cd TAP
+pip install -e sdk/python                      # core
+pip install -e 'sdk/python[anthropic]'         # + Anthropic adapter
+pip install -e 'sdk/python[openai]'            # + OpenAI adapter
+pip install -e 'sdk/python[ollama]'            # + Ollama adapter
 ```
 
 ## Consumer
