@@ -1,0 +1,32 @@
+{
+  "name": "@tap-protocol/sdk",
+  "version": "0.1.0",
+  "description": "TAP — Token Access Protocol. Token-by-token payments for LLM inference on Solana. TypeScript consumer SDK.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist", "src", "README.md"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "tsc -p tsconfig.test.json && node --test 'dist-tests/tests/*.test.js'"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@noble/ed25519": "^2.1.0",
+    "@noble/hashes": "^1.4.0",
+    "@solana/kit": "^2.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  },
+  "keywords": ["solana", "x402", "llm", "payments", "state-channel", "streaming"],
+  "license": "MIT"
+}
