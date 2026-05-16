@@ -79,4 +79,4 @@ async def handle(body):
 | `tap.evaluators` | JSON schema, length, topic, content, repetition |
 | `tap.timing` | Grace / pause / total-session timeouts |
 
-See `docs/ARCHITECTURE.md` at the repo root for the full file-to-responsibility map.
+See [`docs/docs/architecture.md`](../../docs/docs/architecture.md) for the full file-to-responsibility map.
