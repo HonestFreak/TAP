@@ -76,7 +76,7 @@ wallet errors.
 
 ## System requirements
 
-- Python 3.12+ (uses `slots=True` dataclasses extensively)
+- Python 3.11+ (matches `requires-python` in `pyproject.toml`)
 - A Solana keypair with USDC and SOL on the target cluster
 - For the demo: a Gemini API key (or wire your own model adapter)
 
