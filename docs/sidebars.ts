@@ -36,6 +36,7 @@ const sidebars: SidebarsConfig = {
         'sdk/install',
         'sdk/producer',
         'sdk/consumer',
+        'sdk/typescript',
         'sdk/evaluators',
         'sdk/x402',
         'sdk/tokenizer',

@@ -45,8 +45,9 @@ sequenceDiagram
   does about it, and how the protocol fits with x402.
 * [Protocol](/protocol/on-chain) — on-chain instructions, wire format, trust
   guarantees and adversarial scenarios.
-* [SDK](/sdk/install) — installing the Python SDK and writing your own
-  producer / consumer.
+* [SDK](/sdk/install) — installing the Python SDK (consumer + producer)
+  or the [TypeScript SDK](/sdk/typescript) (consumer only) and writing
+  against either.
 * [Demo](/demo/run) — running the reference Gemini-backed producer with the
   React dashboard against Solana devnet.
 * [Whitepaper](/whitepaper) — the full protocol specification (PDF).

@@ -5,8 +5,18 @@ sidebar_position: 1
 
 # Installing the SDK
 
-The TAP Python SDK lives at `sdk/python/` in the repo. Install it
-editable:
+TAP ships two SDKs that share the same wire format:
+
+| SDK | Path | Scope | Status |
+| --- | --- | --- | --- |
+| **Python** | `sdk/python/` | Consumer + producer + adapters + evaluators + settler | Reference implementation |
+| **TypeScript** | `sdk/typescript/` | Consumer only | Wire-format parity verified against Python fixtures |
+
+Pick Python if you're building a producer or a Python consumer. Pick
+TypeScript if you're consuming TAP from a Node / Bun / Deno / browser
+client — see [TypeScript SDK](/sdk/typescript) for the full guide.
+
+The rest of this page covers the **Python** SDK. Install it editable:
 
 ```bash
 git clone https://github.com/HonestFreak/TAP

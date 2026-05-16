@@ -90,6 +90,10 @@ tap/
 │   ├── tokenizer.py          # tokenizer registry for §4.9 prompt-token quoting
 │   └── timing/               # grace / pause / total-session timeouts
 │
+├── sdk/typescript/           # TypeScript consumer SDK (Node 20+ / Bun / Deno / browser)
+│   └── src/                  # protocol · x402 · chain · consumer — wire-format parity
+│                             #   with Python is verified against fixtures
+│
 ├── demo/                     # Reference end-to-end demo
 │   ├── producer.py           # FastAPI producer (Gemini-backed)
 │   ├── runner.py             # FastAPI backend that drives TapConsumer for the React UI
@@ -148,6 +152,18 @@ cd sdk/python
 pip install -e '.[anthropic]'
 pytest
 ```
+
+### TypeScript SDK (consumer only)
+
+```bash
+cd sdk/typescript
+npm install
+npm run build
+npm test
+```
+
+See [`sdk/typescript/README.md`](./sdk/typescript/README.md) and the
+[TypeScript SDK docs page](./docs/docs/sdk/typescript.md) for usage.
 
 ### Demo
 
